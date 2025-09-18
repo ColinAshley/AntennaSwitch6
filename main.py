@@ -9,8 +9,8 @@ import socket
 import machine
 
 # Wi-Fi credentials
-ssid = 'NETHED'
-password = '22PastureC'
+ssid = 'SSID'
+password = 'password'
 
 # Define the GPIO pins for the relays
 # The pins are active high, set them to low initially.
