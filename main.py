@@ -9,17 +9,15 @@ import socket
 import machine
 
 # Wi-Fi credentials
-ssid = 'SSID'
-password = 'PSK Key'
+ssid = 'NETHED'
+password = '22PastureC'
 
 # Define the GPIO pins for the relays
-# The pins are active low, so we set them to 1 (HIGH) to keep the relays off initially
-relay_pins = [machine.Pin(8, machine.Pin.OUT, value=1),
-              machine.Pin(9, machine.Pin.OUT, value=1),
-              machine.Pin(10, machine.Pin.OUT, value=1),
-              machine.Pin(11, machine.Pin.OUT, value=1),
-              machine.Pin(12, machine.Pin.OUT, value=1),
-              machine.Pin(13, machine.Pin.OUT, value=1)]
+# The pins are active high, set them to low initially.
+from machine import Pin, Signal
+pins = [8, 9, 10, 11, 12, 13]
+relay_pins = [Signal(Pin(pin, Pin.OUT, value=1), invert=True) for pin in pins]
+antname = ['EFLW    ', 'Doublet ', '4m Dipole', '2m/70cm  ', '', '']
 
 # Connect to Wi-Fi
 def connect():
@@ -28,7 +26,6 @@ def connect():
     wlan.connect(ssid, password)
     while not wlan.isconnected():
         print('Waiting for connection...')
-        machine.sleep(2)
     print(f'Connected to {ssid}, IP address: {wlan.ifconfig()[0]}')
     return wlan
 
@@ -37,8 +34,8 @@ def web_page():
     # Generate the status of each relay
     relay_status = ""
     for i, pin in enumerate(relay_pins):
-        status = "OFF" if pin.value() == 1 else "ON"
-        relay_status += f"<li>Antenna {i+1}: {status} <a href=\"?relay={i}\"><button>Select</button></a></li>"
+        status = "OFF" if pin.value() == 0 else "ACTIVE"
+        relay_status += f"<li>{antname[i]}: {status} <a href=\"?relay={i}\"><button>Select</button></a></li>"
 
     html = f"""
     <!DOCTYPE html>
@@ -90,7 +87,7 @@ try:
             if relay_index_str.isdigit():
                 relay_index = int(relay_index_str)
                 if 0 <= relay_index < len(relay_pins):
-                    # Toggle the relay pin (relays are active low)
+                    # Toggle the relay pin (relays are active high)
                     relay_pins[relay_index].value(not relay_pins[relay_index].value())
                     print(f"Toggled relay {relay_index+1}")
 
